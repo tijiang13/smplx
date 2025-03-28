@@ -366,7 +366,6 @@ class SMPL(nn.Module):
         if transl is None and hasattr(self, 'transl'):
             transl = self.transl
 
-        full_pose = torch.cat([global_orient, body_pose], dim=1)
 
         batch_size = max(betas.shape[0], global_orient.shape[0],
                          body_pose.shape[0])
@@ -374,6 +373,16 @@ class SMPL(nn.Module):
         if betas.shape[0] != batch_size:
             num_repeats = int(batch_size / betas.shape[0])
             betas = betas.expand(num_repeats, -1)
+        
+        if global_orient.shape[0] != batch_size:
+            num_repeats = int(batch_size / global_orient.shape[0])
+            global_orient = global_orient.expand(num_repeats, -1)
+        
+        if body_pose.shape[0] != batch_size:
+            num_repeats = int(batch_size / body_pose.shape[0])
+            body_pose = body_pose.expand(num_repeats, -1)
+
+        full_pose = torch.cat([global_orient, body_pose], dim=1)
 
         vertices, joints = lbs(betas, full_pose, self.v_template,
                                self.shapedirs, self.posedirs,
